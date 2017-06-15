@@ -39,14 +39,14 @@ function login($email, $password, $mysqli) {
         $stmt->execute();    // Execute the prepared query.
         $stmt->store_result();
         // get variables from result.
-        $stmt->bind_result($user_id, $username, $db_password, $comp_points);
+        $stmt->bind_result($id, $username, $db_password, $comp_points);
         $stmt->fetch();
  
         if ($stmt->num_rows == 1) {
             // If the user exists we check if the account is locked
             // from too many login attempts 
  
-            if (checkbrute($user_id, $mysqli) == true) {
+            if (checkbrute($id, $mysqli) == true) {
                 // Account is locked 
                 // Send an email to user saying their account is locked
                 return false;
@@ -62,8 +62,8 @@ function login($email, $password, $mysqli) {
                     $comp_points = preg_replace("/[^0-9]+/", "", $comp_points);
                     $_SESSION['comp_points'] = $comp_points;
 
-                    $user_id = preg_replace("/[^0-9]+/", "", $user_id);
-                    $_SESSION['user_id'] = $user_id;
+                    $id = preg_replace("/[^0-9]+/", "", $id);
+                    $_SESSION['id'] = $id;
 
                     // XSS protection as we might print this value
                     $username = preg_replace("/[^a-zA-Z0-9_\-]+/", 
@@ -118,11 +118,11 @@ function checkbrute($user_id, $mysqli) {
 
 function login_check($mysqli) {
     // Check if all session variables are set 
-    if (isset($_SESSION['user_id'], 
+    if (isset($_SESSION['id'], 
                         $_SESSION['username'], 
                         $_SESSION['login_string'])) {
  
-        $user_id = $_SESSION['user_id'];
+        $id = $_SESSION['id'];
         $login_string = $_SESSION['login_string'];
         $username = $_SESSION['username'];
  
@@ -133,7 +133,7 @@ function login_check($mysqli) {
                                       FROM users 
                                       WHERE id = ? LIMIT 1")) {
             // Bind "$user_id" to parameter. 
-            $stmt->bind_param('i', $user_id);
+            $stmt->bind_param('i', $id);
             $stmt->execute();   // Execute the prepared query.
             $stmt->store_result();
  
